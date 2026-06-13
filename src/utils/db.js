@@ -228,7 +228,14 @@ export const getLocalDB = () => {
     return INITIAL_DATA;
   }
   try {
-    return JSON.parse(dbStr);
+    const parsed = JSON.parse(dbStr);
+    // Jika data tidak valid, kosong, atau tidak memiliki properti kunci (profile/credentials)
+    // reset ke INITIAL_DATA agar aplikasi tidak crash karena data korup.
+    if (!parsed || !parsed.profile || !parsed.credentials) {
+      localStorage.setItem(DB_KEY, JSON.stringify(INITIAL_DATA));
+      return INITIAL_DATA;
+    }
+    return parsed;
   } catch (e) {
     localStorage.setItem(DB_KEY, JSON.stringify(INITIAL_DATA));
     return INITIAL_DATA;
