@@ -36,8 +36,8 @@ export default function Sidebar({ activeTab, setActiveTab, profile, onLogout, is
             <BgnLogo size={34} />
           </div>
           <div className="sidebar-title-container">
-            <h1 className="sidebar-title">BGN SPPG</h1>
-            <span className="sidebar-subtitle">Nutrition Agency Portal</span>
+            <h1 className="sidebar-title">Dashboard</h1>
+            <span className="sidebar-subtitle">SPPG Al-Uzlah Islamic</span>
           </div>
         </div>
         
