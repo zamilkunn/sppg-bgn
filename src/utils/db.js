@@ -239,10 +239,24 @@ export const saveLocalDB = (data) => {
   localStorage.setItem(DB_KEY, JSON.stringify(data));
 };
 
-// Supabase config helpers
+// Supabase config helpers (Prepopulated with User's Supabase credentials)
+const DEFAULT_SUPABASE_CONFIG = {
+  url: 'https://bwmeeeajnmmgzbocznun.supabase.co',
+  anonKey: 'sb_publishable_YczwyCL_ufJnWynqmHF_fQ_t1Wig55r',
+  isConnected: true
+};
+
 export const getSupabaseConfig = () => {
   const config = localStorage.getItem(SUPABASE_CONFIG_KEY);
-  return config ? JSON.parse(config) : { url: '', anonKey: '', isConnected: false };
+  if (!config) {
+    localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify(DEFAULT_SUPABASE_CONFIG));
+    return DEFAULT_SUPABASE_CONFIG;
+  }
+  try {
+    return JSON.parse(config);
+  } catch (e) {
+    return DEFAULT_SUPABASE_CONFIG;
+  }
 };
 
 export const saveSupabaseConfig = (config) => {
@@ -279,7 +293,6 @@ export const getDB = async () => {
       .single();
 
     if (error) {
-      // If table exists but row 1 doesn't, insert local data
       if (error.code === 'PGRST116') {
         await client.from('sppg_state').insert({ id: 1, data: localData });
         return localData;
@@ -288,7 +301,6 @@ export const getDB = async () => {
     }
 
     if (data && data.data) {
-      // Sync cloud data to local copy
       saveLocalDB(data.data);
       return data.data;
     }

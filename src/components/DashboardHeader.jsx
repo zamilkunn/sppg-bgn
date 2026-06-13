@@ -1,11 +1,11 @@
 import React from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Menu } from 'lucide-react';
 
-export default function DashboardHeader({ activeTab, isDark, setIsDark, profile }) {
+export default function DashboardHeader({ activeTab, isDark, setIsDark, profile, onMenuClick }) {
   const getTabTitle = () => {
     switch (activeTab) {
       case 'buku-kas':
-        return 'Pencatat Buku Kas (Umum & Kecil)';
+        return 'Pencatat Buku Kas';
       case 'lap-biaya':
         return 'Laporan Biaya Operasional';
       case 'realisasi':
@@ -35,9 +35,18 @@ export default function DashboardHeader({ activeTab, isDark, setIsDark, profile 
 
   return (
     <header className="dashboard-header">
-      <div className="header-title-section">
-        <h1>{getTabTitle()}</h1>
-        <span className="header-meta">{getSubTitle()}</span>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <button 
+          className="burger-btn" 
+          onClick={onMenuClick}
+          title="Buka Menu"
+        >
+          <Menu size={22} />
+        </button>
+        <div className="header-title-section">
+          <h1>{getTabTitle()}</h1>
+          <span className="header-meta">{getSubTitle()}</span>
+        </div>
       </div>
 
       <div className="header-controls">

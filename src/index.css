@@ -1130,3 +1130,133 @@ button, input, select, textarea {
 .print-signature-section {
   display: none;
 }
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+    z-index: 1000;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    animation: fadeIn 0.2s ease;
+  }
+  
+  .main-layout {
+    width: 100vw;
+    height: 100vh;
+  }
+  
+  .dashboard-header {
+    padding: 0 16px;
+    height: 64px;
+    gap: 12px;
+  }
+  
+  .header-title-section h1 {
+    font-size: 16px;
+  }
+  
+  .header-meta {
+    font-size: 10px;
+    display: none; /* Hide location metadata on tiny mobile headers to save space */
+  }
+
+  .sppg-badge {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  
+  .panel-container {
+    padding: 16px;
+  }
+  
+  .grid-stats {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+  
+  .page-card {
+    padding: 16px;
+  }
+  
+  .page-card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .page-card-header .btn,
+  .page-card-header div {
+    width: 100%;
+  }
+
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+  
+  .filter-group {
+    width: 100%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+  
+  .form-group-full {
+    grid-column: span 1 !important;
+  }
+  
+  /* Mobile menu burger button */
+  .burger-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-main);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  
+  .burger-btn:hover {
+    background-color: var(--primary-light);
+  }
+}
+
+/* Hide burger button by default on desktop */
+.burger-btn {
+  display: none;
+}
+.sidebar-overlay {
+  display: none;
+}
+@media (max-width: 768px) {
+  .sidebar-overlay.active {
+    display: block;
+  }
+}

@@ -20,6 +20,7 @@ export default function App() {
   // Offline-first initialization
   const [db, setDb] = useState(() => getLocalDB());
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile drawer state
   
   // App routing/view state
   const [activeTab, setActiveTab] = useState('buku-kas');
@@ -190,11 +191,21 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      {/* Mobile Backdrop Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="sidebar-overlay active" 
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+      )}
+      
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         profile={db.profile}
         onLogout={handleLogout}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
       <div className="main-layout">
         <DashboardHeader 
@@ -202,6 +213,7 @@ export default function App() {
           isDark={isDark} 
           setIsDark={setIsDark}
           profile={db.profile}
+          onMenuClick={() => setIsSidebarOpen(true)}
         />
         {isSyncing && (
           <div style={{
@@ -211,7 +223,8 @@ export default function App() {
             padding: '4px',
             fontSize: '11px',
             fontWeight: 'bold',
-            letterSpacing: '0.5px'
+            letterSpacing: '0.5px',
+            zIndex: 10
           }}>
             🔄 MENYINKRONKAN DENGAN CLOUD SUPABASE...
           </div>

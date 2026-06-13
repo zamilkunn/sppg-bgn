@@ -8,12 +8,12 @@ import {
   Scale, 
   FileText, 
   RefreshCw, 
-  Sliders, 
   Thermometer,
-  LogOut 
+  LogOut,
+  X
 } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, profile, onLogout }) {
+export default function Sidebar({ activeTab, setActiveTab, profile, onLogout, isOpen, onClose }) {
   const menuItems = [
     { id: 'buku-kas', name: 'Buku Kas', icon: BookOpen },
     { id: 'lap-biaya', name: 'Laporan Biaya', icon: BarChart3 },
@@ -27,16 +27,38 @@ export default function Sidebar({ activeTab, setActiveTab, profile, onLogout }) 
     { id: 'setting', name: 'Setting', icon: Sliders },
   ];
 
+  // Dummy fallback in case Sliders icon was imported or not
+  const Sliders = FileText; // just in case
+
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="sidebar-logo-img">
-          <BgnLogo size={34} />
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="sidebar-logo-img">
+            <BgnLogo size={34} />
+          </div>
+          <div className="sidebar-title-container">
+            <h1 className="sidebar-title">BGN SPPG</h1>
+            <span className="sidebar-subtitle">Nutrition Agency Portal</span>
+          </div>
         </div>
-        <div className="sidebar-title-container">
-          <h1 className="sidebar-title">Dasboard</h1>
-          <span className="sidebar-subtitle">SPPG Al-Uzlah Islamic</span>
-        </div>
+        
+        {/* Mobile Close Button */}
+        <button 
+          className="burger-btn" 
+          onClick={onClose}
+          style={{ 
+            color: '#cbd5e1', 
+            marginRight: 0, 
+            padding: 0, 
+            width: '32px', 
+            height: '32px',
+            display: isOpen ? 'flex' : 'none' 
+          }}
+          title="Tutup Menu"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       <nav className="sidebar-menu">
@@ -45,7 +67,10 @@ export default function Sidebar({ activeTab, setActiveTab, profile, onLogout }) 
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id);
+                if (onClose) onClose(); // Auto-close drawer on mobile selection
+              }}
               className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`}
             >
               <Icon size={18} />
