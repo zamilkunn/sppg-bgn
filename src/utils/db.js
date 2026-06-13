@@ -306,10 +306,18 @@ export const getDB = async () => {
       throw error;
     }
 
-    if (data && data.data) {
+    if (data && data.data && Object.keys(data.data).length > 0 && data.data.credentials) {
       saveLocalDB(data.data);
       return data.data;
     }
+
+    // Jika data di cloud masih kosong atau tidak valid (misal baru dibuat via SQL Editor),
+    // isi database cloud dengan data lokal saat ini agar kredensial admin tidak hilang.
+    if (data && data.data && (Object.keys(data.data).length === 0 || !data.data.credentials)) {
+      await client.from('sppg_state').update({ data: localData, updated_at: new Date() }).eq('id', 1);
+      return localData;
+    }
+
     return localData;
   } catch (e) {
     console.error('Supabase fetch failed, falling back to LocalStorage:', e);
