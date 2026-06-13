@@ -253,7 +253,13 @@ export const getSupabaseConfig = () => {
     return DEFAULT_SUPABASE_CONFIG;
   }
   try {
-    return JSON.parse(config);
+    const parsed = JSON.parse(config);
+    // Jika url kosong, otomatis gunakan default config agar langsung tersambung ke cloud
+    if (!parsed.url || parsed.url.trim() === '') {
+      localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify(DEFAULT_SUPABASE_CONFIG));
+      return DEFAULT_SUPABASE_CONFIG;
+    }
+    return parsed;
   } catch (e) {
     return DEFAULT_SUPABASE_CONFIG;
   }
