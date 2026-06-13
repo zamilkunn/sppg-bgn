@@ -10,7 +10,8 @@ import {
   RefreshCw, 
   Thermometer,
   LogOut,
-  X
+  X,
+  Sliders
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, profile, onLogout, isOpen, onClose }) {
@@ -26,9 +27,6 @@ export default function Sidebar({ activeTab, setActiveTab, profile, onLogout, is
     { id: 'kontrol-suhu', name: 'Kontrol Suhu', icon: Thermometer },
     { id: 'setting', name: 'Setting', icon: Sliders },
   ];
-
-  // Dummy fallback in case Sliders icon was imported or not
-  const Sliders = FileText; // just in case
 
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
