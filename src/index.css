@@ -303,10 +303,10 @@ button, input, select, textarea {
   width: 100%;
 }
 
-/* Sidebar Component */
 .sidebar {
   width: 280px;
   height: 100vh;
+  height: 100dvh;
   background-color: var(--bg-sidebar);
   color: #f8fafc;
   display: flex;
@@ -314,7 +314,7 @@ button, input, select, textarea {
   flex-shrink: 0;
   box-shadow: var(--shadow-xl);
   z-index: 40;
-  overflow-y: auto;
+  overflow: hidden;
   position: relative;
   transition: width var(--transition-normal);
 }
@@ -363,6 +363,7 @@ button, input, select, textarea {
   flex-direction: column;
   gap: 4px;
   flex-grow: 1;
+  overflow-y: auto;
 }
 
 .sidebar-item {
@@ -1144,7 +1145,7 @@ button, input, select, textarea {
     top: 0;
     left: 0;
     bottom: 0;
-    height: 100vh;
+    height: 100dvh;
     transform: translateX(-100%);
     transition: transform var(--transition-normal);
     z-index: 1000;
