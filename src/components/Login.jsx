@@ -8,7 +8,9 @@ export default function Login({ credentials, onLoginSuccess }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username === credentials.username && password === credentials.password) {
+    // Gunakan fallback ke admin/admin jika credentials belum ter-load atau bernilai undefined
+    const safeCreds = credentials || { username: 'admin', password: 'admin' };
+    if (username === safeCreds.username && password === safeCreds.password) {
       onLoginSuccess();
     } else {
       setError('Username atau password salah. Silakan coba lagi.');
