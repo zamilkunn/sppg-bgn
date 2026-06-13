@@ -86,7 +86,7 @@ export default function KartuStok({ items, stockTransactions, setStockTransactio
           <RefreshCw size={20} style={{ color: 'var(--primary)' }} />
           <span>Buku Kartu Kontrol Stok Barang</span>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="header-actions">
           <button className="btn btn-primary" onClick={() => setIsModalOpen(true)} disabled={!selectedItemId}>
             <Plus size={16} />
             <span>Pasok Bahan Masuk (QC)</span>

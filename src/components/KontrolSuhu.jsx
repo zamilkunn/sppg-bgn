@@ -136,7 +136,7 @@ export default function KontrolSuhu({ tempLogs, setTempLogs, profile }) {
           <div className="page-card-title">
             <span>Log Pemantauan Harian Kartu Suhu</span>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="header-actions">
             <button className="btn btn-secondary" onClick={handlePrint}>
               <Printer size={16} />
               <span>Cetak Kartu Suhu</span>

@@ -89,7 +89,7 @@ export default function StokOpname({ items, stockTransactions, setStockTransacti
           <Scale size={20} style={{ color: 'var(--primary)' }} />
           <span>Audit & Rekonsiliasi Stok Opname</span>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="header-actions">
           <button className="btn btn-secondary" onClick={handlePrint}>
             <Printer size={16} />
             <span>Cetak Laporan</span>

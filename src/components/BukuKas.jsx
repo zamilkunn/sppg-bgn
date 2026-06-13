@@ -157,7 +157,7 @@ export default function BukuKas({ bukuKas, setBukuKas, profile, budgets }) {
           <div className="page-card-title">
             <span>Buku Kas - {activeSource}</span>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="header-actions">
             <button className="btn btn-secondary" onClick={exportCSV}>
               <Download size={16} />
               <span>Ekspor CSV</span>

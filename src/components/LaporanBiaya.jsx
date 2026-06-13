@@ -57,7 +57,7 @@ export default function LaporanBiaya({ bukuKas, profile }) {
         <div className="page-card-title">
           <span>Laporan Biaya Operasional SPPG</span>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="header-actions">
           <button className="btn btn-secondary" onClick={handlePrint}>
             <Printer size={16} />
             <span>Cetak Laporan</span>
