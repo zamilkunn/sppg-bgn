@@ -1,8 +1,9 @@
-// BGN SPPG LocalStorage Mock Database Utility
+import { createClient } from '@supabase/supabase-js';
 
 const DB_KEY = 'sppg_bgn_db';
+const SUPABASE_CONFIG_KEY = 'sppg_supabase_config';
 
-// Initial Mock Data
+// Initial Mock Data (Same as before)
 const INITIAL_DATA = {
   profile: {
     name: 'Apri',
@@ -11,11 +12,11 @@ const INITIAL_DATA = {
     kabupaten: 'Kab 1',
     provinsi: 'Prov1',
     address: 'Gedung E Kompleks Kementerian Pertanian, Jalan Harsono RM No 3 Ragunan, Pasar Minggu Jakarta 12550',
-    logoUrl: '' // SVG or base64 can be stored here
+    logoUrl: ''
   },
   credentials: {
     username: 'admin',
-    password: 'admin' // customizable in settings
+    password: 'admin'
   },
   budgets: {
     'Bahan Makanan': 500000000,
@@ -96,7 +97,6 @@ const INITIAL_DATA = {
       source: 'Kas Umum',
       category: 'BBM & Distribusi'
     },
-    // Kas Kecil
     {
       id: 'tx-kk-001',
       date: '2025-10-03',
@@ -220,8 +220,8 @@ const INITIAL_DATA = {
   ]
 };
 
-// Get database state
-export const getDB = () => {
+// Local storage helpers
+export const getLocalDB = () => {
   const dbStr = localStorage.getItem(DB_KEY);
   if (!dbStr) {
     localStorage.setItem(DB_KEY, JSON.stringify(INITIAL_DATA));
@@ -230,20 +230,89 @@ export const getDB = () => {
   try {
     return JSON.parse(dbStr);
   } catch (e) {
-    console.error('Failed to parse database, resetting to default', e);
     localStorage.setItem(DB_KEY, JSON.stringify(INITIAL_DATA));
     return INITIAL_DATA;
   }
 };
 
-// Save database state
-export const saveDB = (data) => {
+export const saveLocalDB = (data) => {
   localStorage.setItem(DB_KEY, JSON.stringify(data));
-  // Dispatch a custom event to notify other hooks/components
-  window.dispatchEvent(new Event('sppg_db_update'));
 };
 
-// Initialize database
-export const initDB = () => {
-  return getDB();
+// Supabase config helpers
+export const getSupabaseConfig = () => {
+  const config = localStorage.getItem(SUPABASE_CONFIG_KEY);
+  return config ? JSON.parse(config) : { url: '', anonKey: '', isConnected: false };
+};
+
+export const saveSupabaseConfig = (config) => {
+  localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify(config));
+};
+
+// Initialize connection client
+let supabaseClient = null;
+const initSupabase = () => {
+  const config = getSupabaseConfig();
+  if (config.url && config.anonKey && config.isConnected) {
+    if (!supabaseClient) {
+      supabaseClient = createClient(config.url, config.anonKey);
+    }
+    return supabaseClient;
+  }
+  return null;
+};
+
+// Fetch data from Supabase or fallback to LocalStorage
+export const getDB = async () => {
+  const client = initSupabase();
+  const localData = getLocalDB();
+  
+  if (!client) {
+    return localData;
+  }
+
+  try {
+    const { data, error } = await client
+      .from('sppg_state')
+      .select('data')
+      .eq('id', 1)
+      .single();
+
+    if (error) {
+      // If table exists but row 1 doesn't, insert local data
+      if (error.code === 'PGRST116') {
+        await client.from('sppg_state').insert({ id: 1, data: localData });
+        return localData;
+      }
+      throw error;
+    }
+
+    if (data && data.data) {
+      // Sync cloud data to local copy
+      saveLocalDB(data.data);
+      return data.data;
+    }
+    return localData;
+  } catch (e) {
+    console.error('Supabase fetch failed, falling back to LocalStorage:', e);
+    return localData;
+  }
+};
+
+// Save database state (Local and Cloud in background)
+export const saveDB = async (data) => {
+  saveLocalDB(data);
+  window.dispatchEvent(new Event('sppg_db_update'));
+
+  const client = initSupabase();
+  if (client) {
+    try {
+      await client
+        .from('sppg_state')
+        .update({ data: data, updated_at: new Date() })
+        .eq('id', 1);
+    } catch (e) {
+      console.error('Supabase upload failed:', e);
+    }
+  }
 };

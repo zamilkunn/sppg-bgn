@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDB, saveDB } from './utils/db';
+import { getDB, saveDB, getLocalDB } from './utils/db';
 
 // Import Components
 import Login from './components/Login';
@@ -17,8 +17,9 @@ import KontrolSuhu from './components/KontrolSuhu';
 import Settings from './components/Settings';
 
 export default function App() {
-  // Database state
-  const [db, setDb] = useState(() => getDB());
+  // Offline-first initialization
+  const [db, setDb] = useState(() => getLocalDB());
+  const [isSyncing, setIsSyncing] = useState(false);
   
   // App routing/view state
   const [activeTab, setActiveTab] = useState('buku-kas');
@@ -27,14 +28,23 @@ export default function App() {
     return sessionStorage.getItem('sppg_authenticated') === 'true';
   });
 
-  // Sync state changes back to database
-  const updateDBState = (key, value) => {
-    setDb(prev => {
-      const updated = { ...prev, [key]: value };
-      saveDB(updated);
-      return updated;
-    });
+  // Sync state changes back to database (Local storage and Cloud)
+  const updateDBState = async (key, value) => {
+    const updated = { ...db, [key]: value };
+    setDb(updated);
+    await saveDB(updated);
   };
+
+  // Background Cloud Sync on mount
+  useEffect(() => {
+    const loadCloudData = async () => {
+      setIsSyncing(true);
+      const cloudData = await getDB();
+      setDb(cloudData);
+      setIsSyncing(false);
+    };
+    loadCloudData();
+  }, []);
 
   // Sync theme
   useEffect(() => {
@@ -47,8 +57,9 @@ export default function App() {
 
   // Sync state changes across tabs
   useEffect(() => {
-    const handleStorageUpdate = () => {
-      setDb(getDB());
+    const handleStorageUpdate = async () => {
+      const updatedData = getLocalDB();
+      setDb(updatedData);
     };
     window.addEventListener('sppg_db_update', handleStorageUpdate);
     return () => window.removeEventListener('sppg_db_update', handleStorageUpdate);
@@ -64,9 +75,9 @@ export default function App() {
     setIsLoggedIn(false);
   };
 
-  const handleImportDB = (importedData) => {
-    saveDB(importedData);
+  const handleImportDB = async (importedData) => {
     setDb(importedData);
+    await saveDB(importedData);
   };
 
   // If not logged in, show Login gate
@@ -192,6 +203,19 @@ export default function App() {
           setIsDark={setIsDark}
           profile={db.profile}
         />
+        {isSyncing && (
+          <div style={{
+            background: 'linear-gradient(90deg, #1e6091, #34a0a4)',
+            color: 'white',
+            textAlign: 'center',
+            padding: '4px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            letterSpacing: '0.5px'
+          }}>
+            🔄 MENYINKRONKAN DENGAN CLOUD SUPABASE...
+          </div>
+        )}
         <main className="panel-container">
           {renderActivePanel()}
         </main>

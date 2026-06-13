@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Sliders, Save, ShieldCheck, Download, Upload, Plus, Trash2 } from 'lucide-react';
+import { Sliders, Save, ShieldCheck, Download, Upload, Plus, Trash2, Database, AlertCircle } from 'lucide-react';
+import { getSupabaseConfig, saveSupabaseConfig } from '../utils/db';
 
 export default function Settings({ 
   profile, setProfile, 
@@ -11,6 +12,9 @@ export default function Settings({
   const [profileForm, setProfileForm] = useState({ ...profile });
   const [credForm, setCredForm] = useState({ ...credentials });
   const [budgetForm, setBudgetForm] = useState({ ...budgets });
+
+  // Supabase connection state
+  const [dbConfig, setDbConfig] = useState(() => getSupabaseConfig());
 
   // New Item Master State
   const [newItem, setNewItem] = useState({
@@ -96,9 +100,134 @@ export default function Settings({
     };
   };
 
+  // Supabase Connect / Disconnect Handlers
+  const handleConnectSupabase = (e) => {
+    e.preventDefault();
+    if (!dbConfig.url || !dbConfig.anonKey) {
+      alert('Mohon isi Supabase Project URL dan Anon Key terlebih dahulu!');
+      return;
+    }
+    
+    const newConfig = {
+      url: dbConfig.url.trim(),
+      anonKey: dbConfig.anonKey.trim(),
+      isConnected: true
+    };
+    
+    saveSupabaseConfig(newConfig);
+    alert('Konfigurasi Supabase disimpan! Halaman akan dimuat ulang untuk menghubungkan dan sinkronisasi data.');
+    window.location.reload();
+  };
+
+  const handleDisconnectSupabase = () => {
+    if (window.confirm('Apakah Anda yakin ingin memutuskan sambungan database cloud? Aplikasi akan kembali menggunakan database LocalStorage browser.')) {
+      const newConfig = { url: '', anonKey: '', isConnected: false };
+      saveSupabaseConfig(newConfig);
+      window.location.reload();
+    }
+  };
+
+  const sqlSetupScript = `-- COPY & PASTE SCRIPT INI DI SUPABASE SQL EDITOR:
+CREATE TABLE IF NOT EXISTS sppg_state (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  data JSONB NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+INSERT INTO sppg_state (id, data) 
+VALUES (1, '{}'::jsonb)
+ON CONFLICT (id) DO NOTHING;
+
+ALTER TABLE sppg_state ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read" ON sppg_state FOR SELECT USING (true);
+CREATE POLICY "Allow public write" ON sppg_state FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update" ON sppg_state FOR UPDATE USING (true);`;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       
+      {/* 0. Supabase Cloud Sync Settings (New Section) */}
+      <div className="page-card" style={{ border: dbConfig.isConnected ? '2px solid var(--success)' : '1px solid var(--border-color)' }}>
+        <div className="page-card-header">
+          <div className="page-card-title" style={{ color: dbConfig.isConnected ? 'var(--success)' : 'var(--primary)' }}>
+            <Database size={18} />
+            <span>Koneksi Database Cloud (Supabase Sync)</span>
+          </div>
+          <span className={`badge ${dbConfig.isConnected ? 'badge-success' : 'badge-danger'}`}>
+            {dbConfig.isConnected ? 'Tersambung (Cloud)' : 'Lokal (Browser)'}
+          </span>
+        </div>
+        
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+          Gunakan fitur ini jika Anda ingin menyinkronkan data keuangan dan stok secara online antar komputer operasional.
+        </p>
+
+        <form onSubmit={handleConnectSupabase} style={{ marginBottom: '20px' }}>
+          <div className="form-grid" style={{ marginBottom: '16px' }}>
+            <div className="filter-group form-group-full">
+              <label className="input-label" style={{ color: 'var(--text-main)' }}>Supabase Project URL</label>
+              <input
+                type="url"
+                className="form-control"
+                placeholder="Contoh: https://bwmeeeajnmmgzbocznun.supabase.co"
+                value={dbConfig.url}
+                onChange={(e) => setDbConfig(prev => ({ ...prev, url: e.target.value }))}
+                disabled={dbConfig.isConnected}
+                required
+              />
+            </div>
+            <div className="filter-group form-group-full">
+              <label className="input-label" style={{ color: 'var(--text-main)' }}>Supabase API Anon Key (Public Key)</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Masukkan anon key panjang Anda"
+                value={dbConfig.anonKey}
+                onChange={(e) => setDbConfig(prev => ({ ...prev, anonKey: e.target.value }))}
+                disabled={dbConfig.isConnected}
+                required
+              />
+            </div>
+          </div>
+
+          {dbConfig.isConnected ? (
+            <button type="button" className="btn btn-secondary" onClick={handleDisconnectSupabase} style={{ color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
+              Putuskan Sambungan Cloud
+            </button>
+          ) : (
+            <button type="submit" className="btn btn-primary">
+              Hubungkan & Sinkronkan
+            </button>
+          )}
+        </form>
+
+        {!dbConfig.isConnected && (
+          <div style={{ background: 'var(--warning-bg)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '16px', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ color: 'var(--warning)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+              <AlertCircle size={16} />
+              <span>Langkah Penting Sebelum Menghubungkan:</span>
+            </div>
+            <ol style={{ fontSize: '12px', color: 'var(--text-main)', paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <li>Buka dashboard Supabase Anda, masuk ke menu **SQL Editor**.</li>
+              <li>Klik **New Query**, salin dan tempel (paste) kode SQL di bawah ini, lalu klik **Run**:</li>
+            </ol>
+            <pre style={{ 
+              background: 'var(--bg-app)', 
+              color: 'var(--text-main)', 
+              padding: '12px', 
+              borderRadius: 'var(--radius-sm)', 
+              fontSize: '11px', 
+              fontFamily: 'var(--font-mono)', 
+              overflowX: 'auto',
+              border: '1px solid var(--border-color)',
+              maxHeight: '150px'
+            }}>
+              {sqlSetupScript}
+            </pre>
+          </div>
+        )}
+      </div>
+
       {/* 1. SPPG Profile Details */}
       <div className="page-card">
         <div className="page-card-header">
